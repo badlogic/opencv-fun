@@ -18,7 +18,6 @@ public class FaceDetectionTest {
 		VideoCapture video = new VideoCapture(0);
 
 		CascadeClassifier classifier = new CascadeClassifier("data/haarcascade_frontalface_alt.xml");
-		
 		ImgWindow window = ImgWindow.newWindow();
 		if (video.isOpened()) {
 			Mat mat = new Mat();
