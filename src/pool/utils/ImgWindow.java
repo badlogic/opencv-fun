@@ -3,6 +3,7 @@ package pool.utils;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
@@ -16,6 +17,7 @@ import org.opencv.core.Mat;
 @SuppressWarnings("serial")
 public class ImgWindow extends JPanel {
 	volatile BufferedImage img;
+	volatile Graphics2D graphics;
 	volatile boolean closed = false;
 	JFrame frame;
 
@@ -55,6 +57,22 @@ public class ImgWindow extends JPanel {
 
 	public static ImgWindow newWindow() {
 		return newWindow(null);
+	}
+	
+	public Graphics2D begin() {
+		if(img != null) {
+			graphics = img.createGraphics();
+			return graphics;
+		} else {
+			return null;
+		}
+	}
+	
+	public void end() {
+		if(graphics != null) {
+			graphics.dispose();
+			repaint();
+		}
 	}
 	
 	public static ImgWindow newWindow(Mat mat) {

@@ -1,5 +1,8 @@
 package pool.tests;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
+
 import org.opencv.core.Mat;
 import org.opencv.highgui.VideoCapture;
 
@@ -18,6 +21,10 @@ public class CaptureVideo {
 				video.read(mat);
 				if(!mat.empty()) {
 					window.setImage(mat);
+					Graphics2D g = window.begin();
+					g.setColor(Color.WHITE);
+					g.drawLine(0, 0, 100, 100);
+					window.end();
 				}
 			}
 		}
