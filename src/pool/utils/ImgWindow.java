@@ -4,6 +4,9 @@ package pool.utils;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
@@ -20,6 +23,7 @@ public class ImgWindow extends JPanel {
 	volatile Graphics2D graphics;
 	volatile boolean closed = false;
 	JFrame frame;
+	volatile int x, y;
 
 	ImgWindow(JFrame frame) {
 		this.frame = frame;
@@ -27,6 +31,20 @@ public class ImgWindow extends JPanel {
 			@Override
 			public void windowClosed (WindowEvent e) {
 				closed = true;
+			}
+		});
+		this.setFocusable(true);
+		this.addMouseMotionListener(new MouseMotionListener() {
+			@Override
+			public void mouseMoved (MouseEvent e) {
+				x = e.getX();
+				y = e.getY();
+			}
+			
+			@Override
+			public void mouseDragged (MouseEvent e) {
+				x = e.getX();
+				y = e.getY();
 			}
 		});
 	}
@@ -51,6 +69,11 @@ public class ImgWindow extends JPanel {
 		repaint();
 	}
 	
+	public void drawMouseCoords() {
+		if(graphics == null) return;
+		graphics.drawString(x + ", " + y, 10, 20);
+	}
+	
 	public boolean isClosed() {
 		return closed;
 	}
@@ -71,6 +94,7 @@ public class ImgWindow extends JPanel {
 	public void end() {
 		if(graphics != null) {
 			graphics.dispose();
+			graphics = null;
 			repaint();
 		}
 	}

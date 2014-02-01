@@ -20,7 +20,7 @@ public class FaceDetectionTest {
 		CascadeClassifier classifier = new CascadeClassifier("data/haarcascade_frontalface_alt.xml");
 		ImgWindow window = ImgWindow.newWindow();
 		if (video.isOpened()) {
-			Mat mat = new Mat();
+		 	Mat mat = new Mat();
 			while (!window.isClosed()) {
 				loop(classifier, mat, window, video);
 			}
@@ -30,9 +30,12 @@ public class FaceDetectionTest {
 
 	public static void loop (CascadeClassifier classifier, Mat mat, ImgWindow window, VideoCapture video) {
 		video.read(mat);
+		System.out.println(mat);
 		if (!mat.empty()) {
 			MatOfRect rects = new MatOfRect();
+			long start = System.nanoTime();
 			classifier.detectMultiScale(mat, rects);
+			System.out.println((System.nanoTime()-start)/1000000000.0);
 			window.setImage(mat);
 			Graphics2D g = window.begin();
 			g.setColor(Color.RED);
