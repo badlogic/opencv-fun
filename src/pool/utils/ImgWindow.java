@@ -4,6 +4,8 @@ package pool.utils;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
@@ -20,6 +22,7 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
 @SuppressWarnings("serial")
@@ -43,7 +46,7 @@ public class ImgWindow extends JComponent {
 		this.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked (MouseEvent e) {
-				synchronized(this) {
+				synchronized (this) {
 					clicked = true;
 					mouseX = e.getX();
 					mouseY = e.getY();
@@ -67,11 +70,11 @@ public class ImgWindow extends JComponent {
 	}
 
 	public void setImage (Mat mat) {
-		if(mat == null) {
+		if (mat == null) {
 			img = null;
 		} else {
 			this.img = matToBufferedImage(mat);
-			if(getWidth() != img.getWidth() || getHeight() != img.getHeight()) {
+			if (getWidth() != img.getWidth() || getHeight() != img.getHeight()) {
 				setPreferredSize(new Dimension(img.getWidth(), img.getHeight()));
 				frame.pack();
 			}
@@ -79,14 +82,14 @@ public class ImgWindow extends JComponent {
 		repaint();
 	}
 
-	public boolean isClicked() {
-		synchronized(this) {
+	public boolean isClicked () {
+		synchronized (this) {
 			boolean res = clicked;
 			clicked = false;
 			return res;
 		}
 	}
-	
+
 	@Override
 	protected void paintComponent (Graphics g) {
 		BufferedImage tmp = img;
@@ -94,6 +97,7 @@ public class ImgWindow extends JComponent {
 			g.drawImage(tmp, 0, 0, tmp.getWidth(), tmp.getHeight(), this);
 		}
 	}
+
 	public Graphics2D begin () {
 		if (img != null) {
 			graphics = img.createGraphics();
@@ -111,14 +115,47 @@ public class ImgWindow extends JComponent {
 		}
 	}
 
-	public static ImgWindow newWindow() {
-		return newWindow(null);
+	public void setTitle (String title) {
+		frame.setTitle(title);
+	}
+
+	public void moveToDisplay (int display) {
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		GraphicsDevice[] gd = ge.getScreenDevices();
+		if (display > -1 && display < gd.length) {
+			frame.setLocation(gd[display].getDefaultConfiguration().getBounds().x, frame.getY());
+		} else if (gd.length > 0) {
+			frame.setLocation(gd[0].getDefaultConfiguration().getBounds().x, frame.getY());
+		} else {
+			throw new RuntimeException("No Screens Found");
+		}
+	}
+	
+	public Mat createBuffer() {
+		return new Mat(getHeight(), getWidth(), CvType.CV_8UC3);
+	}
+	
+	public void maximize() {
+		frame.setExtendedState(frame.getExtendedState() | JFrame.MAXIMIZED_BOTH);
+	}
+	
+	public static ImgWindow newUndecoratedWindow () {
+		return newWindow(null, true);
+	}
+
+	public static ImgWindow newWindow () {
+		return newWindow(null, false);
 	}
 	
 	public static ImgWindow newWindow (Mat mat) {
+		return newWindow(mat, false);
+	}	
+
+	public static ImgWindow newWindow (Mat mat, boolean undecorated) {
 		JFrame frame = new JFrame();
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		frame.setSize(400, 400);
+		frame.setUndecorated(undecorated);
 		ImgWindow panel = new ImgWindow(frame);
 		frame.setContentPane(panel);
 		frame.setVisible(true);
