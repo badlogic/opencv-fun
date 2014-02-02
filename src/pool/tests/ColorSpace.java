@@ -17,7 +17,7 @@ public class ColorSpace {
 		CVLoader.load();
 		Mat orig = Highgui.imread("data/topdown-6.jpg");
 		Mat hsv = new Mat();
-		Imgproc.cvtColor(orig, hsv, Imgproc.COLOR_BGR2HSV_FULL);
+		Imgproc.cvtColor(orig, hsv, Imgproc.COLOR_BGR2YCrCb);
 		
 		List<Mat> channels = new ArrayList<Mat>();
 		for(int i = 0; i < hsv.channels(); i++) {

@@ -15,13 +15,13 @@ import pool.utils.ImgWindow;
 public class HoughCircles {
 	public static void main (String[] args) {
 		CVLoader.load();
-		Mat orig = Highgui.imread("data/topdown-10.png");
+		Mat orig = Highgui.imread("data/topdown-6.jpg");
 		Mat gray = new Mat();
 		orig.copyTo(gray);
 		
 		// blur
-		Imgproc.medianBlur(gray, gray, 5);
-//		Imgproc.GaussianBlur(gray, gray, new Size(9, 9), 10);
+//		Imgproc.medianBlur(gray, gray, 5);
+//		Imgproc.GaussianBlur(gray, gray, new Size(3, 3), 100);
 		
 		// convert to grayscale
 		Imgproc.cvtColor(gray, gray, Imgproc.COLOR_BGR2GRAY);
@@ -30,7 +30,7 @@ public class HoughCircles {
 		Mat circles = new Mat();
 		int minRadius = 10;
 		int maxRadius = 18;
-		Imgproc.HoughCircles(gray, circles, Imgproc.CV_HOUGH_GRADIENT, 1, minRadius, 100, 10, minRadius, maxRadius);
+		Imgproc.HoughCircles(gray, circles, Imgproc.CV_HOUGH_GRADIENT, 1, minRadius, 120, 10, minRadius, maxRadius);
 		System.out.println(circles);
 		
 		ImgWindow.newWindow(gray);
@@ -45,7 +45,6 @@ public class HoughCircles {
 				double[] circle = circles.get(0, i);
 				g.drawOval((int)circle[0] - (int)circle[2], (int)circle[1] - (int)circle[2], (int)circle[2] * 2, (int)circle[2] * 2);
 			}		
-			wnd.drawMouseCoords();
 			wnd.end();
 //		}
 	}

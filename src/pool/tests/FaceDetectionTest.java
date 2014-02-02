@@ -21,7 +21,7 @@ public class FaceDetectionTest {
 		ImgWindow window = ImgWindow.newWindow();
 		if (video.isOpened()) {
 		 	Mat mat = new Mat();
-			while (!window.isClosed()) {
+			while (!window.closed) {
 				loop(classifier, mat, window, video);
 			}
 		}

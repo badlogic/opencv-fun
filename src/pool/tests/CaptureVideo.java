@@ -15,7 +15,7 @@ public class CaptureVideo {
 		ImgWindow window = ImgWindow.newWindow();
 		if (video.isOpened()) {
 			Mat mat = new Mat();
-			while (!window.isClosed()) {
+			while (!window.closed) {
 				loop(mat, window, video);
 			}
 		}
