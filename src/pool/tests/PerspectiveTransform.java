@@ -20,9 +20,11 @@ public class PerspectiveTransform {
 	static List<Point> corners = new ArrayList<Point>();
 	static List<Point> target = new ArrayList<Point>();
 	static List<Point> newPoints = new ArrayList<Point>();
+	static List<Point> perspPoints = new ArrayList<Point>();
 	static Mat img;
 	static Mat proj;
 	static Mat trans;
+	static Mat invTrans;
 	
 	public static void main (String[] args) {
 		CVLoader.load();
@@ -49,6 +51,17 @@ public class PerspectiveTransform {
 			for(Point p: newPoints) {
 				Core.circle(img, p, 2, new Scalar(255, 255, 0), 2);
 			}
+			if(invTrans!= null) {
+				Mat transformed = new Mat();
+				if(perspPoints.size() > 0) {
+					Core.perspectiveTransform(Converters.vector_Point2f_to_Mat(perspPoints), transformed, invTrans);
+					List<Point> transPoints = new ArrayList<Point>();
+					Converters.Mat_to_vector_Point2f(transformed, transPoints);
+					for(Point p: transPoints) {
+						Core.circle(img, p, 2, new Scalar(0, 0, 255), 2);
+					}
+				}
+			}
 			
 			// draw new points	
 			if(proj != null) {
@@ -60,6 +73,9 @@ public class PerspectiveTransform {
 					for(Point p: transPoints) {
 						Core.circle(proj, p, 2, new Scalar(255, 255, 0), 2);
 					}
+				}
+				for(Point p: perspPoints) {
+					Core.circle(proj, p, 2, new Scalar(0, 0, 255), 2);
 				}
 			}
 			
@@ -88,12 +104,13 @@ public class PerspectiveTransform {
 	private static void doProjection (ImgWindow projWnd) {
 		if(corners.size() == 4) {
 			Mat cornersMat = Converters.vector_Point2f_to_Mat(corners);
-			Mat targetMAt = Converters.vector_Point2f_to_Mat(target);
-			trans = Imgproc.getPerspectiveTransform(cornersMat, targetMAt);
+			Mat targetMat = Converters.vector_Point2f_to_Mat(target);
+			trans = Imgproc.getPerspectiveTransform(cornersMat, targetMat);
+			invTrans = Imgproc.getPerspectiveTransform(targetMat, cornersMat);
 			proj = new Mat();
 			Imgproc.warpPerspective(img, proj, trans, new Size(img.cols(), img.rows()));
 			if(projWnd.isClicked()) {
-				// add points to draw onto the original space
+				perspPoints.add(new Point(projWnd.mouseX, projWnd.mouseY));
 			}
 		}
 	}	

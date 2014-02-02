@@ -36,7 +36,7 @@ public class HoughCircles {
 		ImgWindow.newWindow(gray);
 		ImgWindow wnd = ImgWindow.newWindow(orig);			
 		
-//		while(!wnd.isClosed()) {
+		while(!wnd.closed) {
 			wnd.setImage(orig);
 			Graphics2D g = wnd.begin();
 			g.setColor(Color.MAGENTA);
@@ -46,6 +46,6 @@ public class HoughCircles {
 				g.drawOval((int)circle[0] - (int)circle[2], (int)circle[1] - (int)circle[2], (int)circle[2] * 2, (int)circle[2] * 2);
 			}		
 			wnd.end();
-//		}
+		}
 	}
 }
