@@ -1,7 +1,6 @@
 package pool.app.screens;
 
 import org.opencv.core.Core;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
@@ -12,6 +11,10 @@ import pool.app.Screen;
 public class CameraCalibrationScreen extends Screen {
 	public CameraCalibrationScreen (PoolApp app) {
 		super(app);
+	}
+	
+	@Override
+	public void initialize () {
 	}
 
 	@Override

@@ -1,11 +1,15 @@
 
 package pool.utils;
 
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
@@ -13,26 +17,28 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 
-import javax.imageio.ImageIO;
-import javax.swing.JComponent;
+import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
 @SuppressWarnings("serial")
-public class ImgWindow extends JComponent {
+public class ImgWindow extends JPanel {
 	JFrame frame;
 	Graphics2D graphics;
 	volatile BufferedImage img = null;
 	volatile boolean clicked;
 	volatile public int mouseX, mouseY;
 	volatile public boolean closed;
+	volatile EventQueue eventQueue = new EventQueue();
 
 	public ImgWindow (JFrame frame) {
 		this.frame = frame;
@@ -68,6 +74,12 @@ public class ImgWindow extends JComponent {
 			}
 		});
 	}
+	
+	public void processEvents() {
+		for(Runnable event: eventQueue.poll()) {
+			event.run();
+		}
+	}
 
 	public void setImage (Mat mat) {
 		if (mat == null) {
@@ -92,6 +104,7 @@ public class ImgWindow extends JComponent {
 
 	@Override
 	protected void paintComponent (Graphics g) {
+		super.paintComponent(g);
 		BufferedImage tmp = img;
 		if (tmp != null) {
 			g.drawImage(tmp, 0, 0, tmp.getWidth(), tmp.getHeight(), this);
@@ -139,6 +152,73 @@ public class ImgWindow extends JComponent {
 		frame.setExtendedState(frame.getExtendedState() | JFrame.MAXIMIZED_BOTH);
 	}
 	
+	public void addButton(final String text, final ClickCallback callback) {
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run () {
+				JPanel panel = ImgWindow.this;
+				JButton btn = new JButton(text);
+				btn.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed (ActionEvent e) {
+						eventQueue.add(new Runnable() {
+							@Override
+							public void run () {
+								if(callback != null) callback.clicked();						
+							}
+						});
+					}
+				});
+				panel.add(btn);
+			}
+		});
+	}
+	
+	public void addSlider(final int min, final int max, final int initial, final ValueCallback callback) {
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run () {
+				JPanel panel = ImgWindow.this;
+				final JSlider slider = new JSlider(min, max, initial);
+				slider.addChangeListener(new ChangeListener() {
+					@Override
+					public void stateChanged (ChangeEvent e) {
+						if(!slider.getValueIsAdjusting()) {
+							eventQueue.add(new Runnable() {
+								@Override
+								public void run () {
+									if(callback != null) callback.valueChanged(slider.getValue());
+								}
+							});
+						}
+					}
+				});			
+				panel.add(slider);
+			}
+		});
+	}
+	
+	public void addLabel(final String text, final Color color) {
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run () {
+				JPanel panel = ImgWindow.this;
+				JLabel label = new JLabel(text);
+				label.setForeground(color);
+				panel.add(label);
+			}
+		});
+	}
+	
+	public void clearControlls() {
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run () {
+				ImgWindow.this.removeAll();
+			}
+		});
+	}
+	
 	public static ImgWindow newUndecoratedWindow () {
 		return newWindow(null, true);
 	}
@@ -157,7 +237,8 @@ public class ImgWindow extends JComponent {
 		frame.setSize(400, 400);
 		frame.setUndecorated(undecorated);
 		ImgWindow panel = new ImgWindow(frame);
-		frame.setContentPane(panel);
+		panel.setLayout(new FlowLayout(FlowLayout.LEFT));
+		frame.add(panel);
 		frame.setVisible(true);
 		panel.setImage(mat);
 		return panel;

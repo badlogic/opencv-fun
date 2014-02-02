@@ -7,6 +7,8 @@ public abstract class Screen {
 		this.app = app;
 	}
 	
+	public abstract void initialize();
+	
 	public abstract void update();
 	
 	public abstract void dispose();

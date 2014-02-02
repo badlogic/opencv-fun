@@ -1,20 +1,44 @@
 package pool.app.screens;
 
+import java.awt.Color;
+
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
-import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 import pool.app.PoolApp;
 import pool.app.Screen;
+import pool.utils.ClickCallback;
+import pool.utils.ValueCallback;
 
 public class BackgroundSubtractionCalibration extends Screen {
 	private Mat backgroundImage;
+	private int threshold = 50;
 
 	public BackgroundSubtractionCalibration (PoolApp app) {
 		super(app);
+	}
+	
+	@Override
+	public void initialize () {
+		app.getCameraView().addButton("next", new ClickCallback() {
+			@Override
+			public void clicked () {
+				System.out.println("fuuck");
+				app.setScreen(new CameraScreen(app));
+			}
+		});
+		
+		app.getCameraView().addLabel("LAbel:", Color.WHITE);
+		
+		app.getCameraView().addSlider(0, 255, 40, new ValueCallback() {
+			@Override
+			public void valueChanged (int value) {
+				threshold = value;
+			}
+		});
 	}
 
 	@Override
@@ -30,7 +54,7 @@ public class BackgroundSubtractionCalibration extends Screen {
 		if(backgroundImage != null) {
 			Core.absdiff(camFrame, backgroundImage, camFrame);
 			Imgproc.cvtColor(camFrame, camFrame, Imgproc.COLOR_BGR2GRAY);
-			Imgproc.threshold(camFrame, camFrame, 40, 255, Imgproc.THRESH_BINARY);
+			Imgproc.threshold(camFrame, camFrame, threshold, 255, Imgproc.THRESH_BINARY);
 		}
 		app.getCameraView().setImage(camFrame);
 		camFrame.release();
@@ -48,5 +72,6 @@ public class BackgroundSubtractionCalibration extends Screen {
 		if(backgroundImage != null) {
 			backgroundImage.release();
 		}
+		app.getCameraView().clearControlls();
 	}
 }
