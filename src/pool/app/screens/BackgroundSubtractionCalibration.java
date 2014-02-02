@@ -29,8 +29,8 @@ public class BackgroundSubtractionCalibration extends Screen {
 		// show the diff if we have a background image
 		if(backgroundImage != null) {
 			Core.absdiff(camFrame, backgroundImage, camFrame);
+			Imgproc.cvtColor(camFrame, camFrame, Imgproc.COLOR_BGR2GRAY);
 			Imgproc.threshold(camFrame, camFrame, 40, 255, Imgproc.THRESH_BINARY);
-			Imgproc.GaussianBlur(camFrame, camFrame, new Size(5, 5), 2);
 		}
 		app.getCameraView().setImage(camFrame);
 		camFrame.release();
