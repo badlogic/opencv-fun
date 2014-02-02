@@ -19,8 +19,10 @@ import pool.utils.ImgWindow;
 public class PerspectiveTransform {
 	static List<Point> corners = new ArrayList<Point>();
 	static List<Point> target = new ArrayList<Point>();
+	static List<Point> newPoints = new ArrayList<Point>();
 	static Mat img;
 	static Mat proj;
+	static Mat trans;
 	
 	public static void main (String[] args) {
 		CVLoader.load();
@@ -34,15 +36,33 @@ public class PerspectiveTransform {
 		target.add(new Point(img.cols(), img.rows()));
 		target.add(new Point(0, img.rows()));
 		
+		newPoints.add(new Point(100, 100));
+		
 		while(!origWnd.closed) {			
 			doRegistration(origWnd);
 			doProjection(projWnd);
 			
 			// draw calibration points		
 			for(Point p: corners) {
-				Core.circle(img, p, 2, new Scalar(0, 255, 0));
+				Core.circle(img, p, 2, new Scalar(0, 255, 0), 2);
 			}
-			Highgui.imwrite("img.jpg", img);
+			for(Point p: newPoints) {
+				Core.circle(img, p, 2, new Scalar(255, 255, 0), 2);
+			}
+			
+			// draw new points	
+			if(proj != null) {
+				Mat transformed = new Mat();
+				if(newPoints.size() > 0) {
+					Core.perspectiveTransform(Converters.vector_Point2f_to_Mat(newPoints), transformed, trans);
+					List<Point> transPoints = new ArrayList<Point>();
+					Converters.Mat_to_vector_Point2f(transformed, transPoints);
+					for(Point p: transPoints) {
+						Core.circle(proj, p, 2, new Scalar(255, 255, 0), 2);
+					}
+				}
+			}
+			
 			origWnd.setImage(img);
 			projWnd.setImage(proj);
 		}
@@ -58,6 +78,10 @@ public class PerspectiveTransform {
 				System.out.println("added calibration point");
 				corners.add(new Point(wnd.mouseX, wnd.mouseY));
 			}
+		} else {
+			if(wnd.isClicked()) {
+				newPoints.add(new Point(wnd.mouseX, wnd.mouseY));
+			}
 		}
 	}
 	
@@ -65,7 +89,7 @@ public class PerspectiveTransform {
 		if(corners.size() == 4) {
 			Mat cornersMat = Converters.vector_Point2f_to_Mat(corners);
 			Mat targetMAt = Converters.vector_Point2f_to_Mat(target);
-			Mat trans = Imgproc.getPerspectiveTransform(cornersMat, targetMAt);
+			trans = Imgproc.getPerspectiveTransform(cornersMat, targetMAt);
 			proj = new Mat();
 			Imgproc.warpPerspective(img, proj, trans, new Size(img.cols(), img.rows()));
 			if(projWnd.isClicked()) {
