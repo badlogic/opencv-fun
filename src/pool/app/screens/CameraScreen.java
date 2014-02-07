@@ -20,6 +20,7 @@ public class CameraScreen extends Screen {
 		Mat camFrame = app.getCamera().nextFrame();
 		app.getCameraView().setImage(camFrame);
 		camFrame.release();
+		System.out.println("what?");
 	}
 
 	@Override

@@ -18,7 +18,7 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.highgui.Highgui;
 
-public class IpCamera {	
+public class IpCamera implements Camera {	
 	private Mat frame;
 	private final String url;
 	private final Thread thread;

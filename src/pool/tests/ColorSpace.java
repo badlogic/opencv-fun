@@ -31,6 +31,16 @@ public class ColorSpace {
 		}
 	}
 	
+	public static Mat getChannel(Mat img, int channelIdx) {
+		List<Mat> channels = new ArrayList<Mat>();
+		for(int i = 0; i < img.channels(); i++) {
+			Mat channel = new Mat();
+			channels.add(channel);
+		}
+		Core.split(img, channels);
+		return channels.get(channelIdx);
+	}
+	
 	public static Mat getChannel(Mat orig, int colorSpace, int channelIdx) {
 		Mat hsv = new Mat();
 		Imgproc.cvtColor(orig, hsv, colorSpace);

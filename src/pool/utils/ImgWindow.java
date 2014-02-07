@@ -183,14 +183,14 @@ public class ImgWindow extends JPanel {
 				slider.addChangeListener(new ChangeListener() {
 					@Override
 					public void stateChanged (ChangeEvent e) {
-						if(!slider.getValueIsAdjusting()) {
+//						if(!slider.getValueIsAdjusting()) {
 							eventQueue.add(new Runnable() {
 								@Override
 								public void run () {
 									if(callback != null) callback.valueChanged(slider.getValue());
 								}
 							});
-						}
+//						}
 					}
 				});			
 				panel.add(slider);
