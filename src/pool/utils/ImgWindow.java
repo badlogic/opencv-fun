@@ -244,7 +244,7 @@ public class ImgWindow extends JPanel {
 		return panel;
 	}
 
-	public static BufferedImage matToBufferedImage (Mat matrix) {
+	public static BufferedImage matToBufferedImage (Mat matrix) {		
 		if (matrix.channels() == 1) {
 			int cols = matrix.cols();
 			int rows = matrix.rows();

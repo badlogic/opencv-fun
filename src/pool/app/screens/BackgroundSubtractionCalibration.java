@@ -91,6 +91,59 @@ public class BackgroundSubtractionCalibration extends Screen {
 		}
 		return result;
 	}
+	
+	private Mat detect3 (Mat cam, Mat background) {
+		// background subtraction
+		Mat diff = cam.clone();
+		background = background.clone();
+
+		// remove noise
+		Imgproc.blur(background, background, new Size(5, 5));
+		Imgproc.blur(diff, diff, new Size(5, 5));
+
+		// take abs diff and create binary image in all 3 channels
+		Core.absdiff(background, diff, diff);
+		Imgproc.threshold(diff, diff, threshold, 255, Imgproc.THRESH_BINARY);
+
+		// extract color channels and merge them to single bitmask
+		Mat r = ColorSpace.getChannel(diff, 2);
+		Mat g = ColorSpace.getChannel(diff, 1);
+		Mat b = ColorSpace.getChannel(diff, 0);
+
+		Mat result = r.clone();
+		Core.add(result, g, result);
+		Core.add(result, b, result);
+
+		Mat mask = result.clone();
+		Mat dist = new Mat();
+		cam.copyTo(result, mask);
+
+		Imgproc.dilate(mask, mask, Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE,  new Size(3, 3)));
+		
+		// get distancetransform, convert to gray for display
+		Imgproc.distanceTransform(mask, dist, Imgproc.CV_DIST_L2, 3);
+		Core.normalize(dist, dist, 0, 1.0, Core.NORM_MINMAX);
+		Imgproc.threshold(dist, dist, 0.50, 1., Imgproc.THRESH_BINARY);
+		Imgproc.erode(dist, dist, Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE,  new Size(20, 20)));
+		Core.convertScaleAbs(dist, dist, 255, 0);
+		
+
+		List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
+		Imgproc.findContours(dist.clone(), contours, new Mat(), Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
+		Imgproc.drawContours(result, contours, -1, new Scalar(0, 0, 255));
+		
+		List<Circle> circles = new ArrayList<Circle>();
+		for (int i = 0; i < contours.size(); i++) {
+			float[] radius = new float[1];
+			Point center = new Point();
+			Imgproc.minEnclosingCircle(new MatOfPoint2f(contours.get(i).toArray()), center, radius);
+			circles.add(new Circle(center.x, center.y, 34));
+			
+			Core.circle(result, center, 34, new Scalar(0, 255, 0), 2);
+		}
+
+		return result;
+	}
 
 	private Mat detect2 (Mat cam, Mat background) {
 		// background subtraction
