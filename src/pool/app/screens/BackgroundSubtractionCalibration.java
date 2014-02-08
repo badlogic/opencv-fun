@@ -80,16 +80,16 @@ public class BackgroundSubtractionCalibration extends Screen {
 		app.getProjectorView().setImage(buffer);
 		buffer.release();
 	}
-
-	public List<Circle> detectCircle (Mat img, int minRadius, int maxRadius) {
-		Mat circles = new Mat();
-		List<Circle> result = new ArrayList<Circle>();
-		Imgproc.HoughCircles(img, circles, Imgproc.CV_HOUGH_GRADIENT, 1, minRadius, 1, 10, minRadius, maxRadius);
-		for (int i = 0; i < circles.cols(); i++) {
-			double[] circle = circles.get(0, i);
-			result.add(new Circle(circle[0], circle[1], circle[2]));
+	
+	public void drawCircles(List<MatOfPoint> contours, Mat img) {
+		List<Circle> circles = new ArrayList<Circle>();
+		for (int i = 0; i < contours.size(); i++) {
+			float[] radius = new float[1];
+			Point center = new Point();
+			Imgproc.minEnclosingCircle(new MatOfPoint2f(contours.get(i).toArray()), center, radius);
+			circles.add(new Circle(center.x, center.y, 34));
+			Core.circle(img, center, 34, new Scalar(0, 255, 0), 2);
 		}
-		return result;
 	}
 	
 	private Mat detect3 (Mat cam, Mat background) {
@@ -98,8 +98,8 @@ public class BackgroundSubtractionCalibration extends Screen {
 		background = background.clone();
 
 		// remove noise
-		Imgproc.blur(background, background, new Size(5, 5));
-		Imgproc.blur(diff, diff, new Size(5, 5));
+		Imgproc.blur(background, background, new Size(3, 3));
+		Imgproc.blur(diff, diff, new Size(3, 3));
 
 		// take abs diff and create binary image in all 3 channels
 		Core.absdiff(background, diff, diff);
@@ -113,37 +113,33 @@ public class BackgroundSubtractionCalibration extends Screen {
 		Mat result = r.clone();
 		Core.add(result, g, result);
 		Core.add(result, b, result);
-
+		Imgproc.dilate(result, result, Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE,  new Size(5, 5)));
+		
 		Mat mask = result.clone();
-		Mat dist = new Mat();
-		cam.copyTo(result, mask);
-
-		Imgproc.dilate(mask, mask, Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE,  new Size(3, 3)));
+		cam.copyTo(result, mask);		
 		
 		// get distancetransform, convert to gray for display
+		Mat dist = new Mat();
 		Imgproc.distanceTransform(mask, dist, Imgproc.CV_DIST_L2, 3);
 		Core.normalize(dist, dist, 0, 1.0, Core.NORM_MINMAX);
+		Mat origDist = dist.clone();
+		Core.convertScaleAbs(origDist, origDist, 255, 0);
+
 		Imgproc.threshold(dist, dist, 0.50, 1., Imgproc.THRESH_BINARY);
-		Imgproc.erode(dist, dist, Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE,  new Size(20, 20)));
 		Core.convertScaleAbs(dist, dist, 255, 0);
-		
 
 		List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
-		Imgproc.findContours(dist.clone(), contours, new Mat(), Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
-		Imgproc.drawContours(result, contours, -1, new Scalar(0, 0, 255));
+//		Imgproc.findContours(dist.clone(), contours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+//		Imgproc.drawContours(result, contours, -1, new Scalar(0, 0, 255));
+//		drawCircles(contours, result);
 		
-		List<Circle> circles = new ArrayList<Circle>();
-		for (int i = 0; i < contours.size(); i++) {
-			float[] radius = new float[1];
-			Point center = new Point();
-			Imgproc.minEnclosingCircle(new MatOfPoint2f(contours.get(i).toArray()), center, radius);
-			circles.add(new Circle(center.x, center.y, 34));
-			
-			Core.circle(result, center, 34, new Scalar(0, 255, 0), 2);
-		}
+		Imgproc.findContours(mask.clone(), contours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+		Imgproc.drawContours(result, contours, -1, new Scalar(0, 0, 255), 2);
 
 		return result;
 	}
+	
+	
 
 	private Mat detect2 (Mat cam, Mat background) {
 		// background subtraction
@@ -151,8 +147,8 @@ public class BackgroundSubtractionCalibration extends Screen {
 		background = background.clone();
 		
 		// remove noise
-		Imgproc.blur(background, background, new Size(5,5));
-		Imgproc.blur(diff, diff, new Size(5,5));
+		Imgproc.blur(background, background, new Size(7,7));
+		Imgproc.blur(diff, diff, new Size(7,7));
 		
 		// take abs diff and create binary image in all 3 channels
 		Core.absdiff(background, diff, diff);		
@@ -167,11 +163,13 @@ public class BackgroundSubtractionCalibration extends Screen {
 		Core.add(result, g, result);
 		Core.add(result, b, result);
 		
+		Imgproc.dilate(result, result, Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE,  new Size(5, 5)));
+		
 		Mat mask = result.clone();
 		cam.copyTo(result, mask);
 		
 		List<MatOfPoint> contours = new ArrayList<MatOfPoint>();    
-	   Imgproc.findContours(mask, contours, new Mat(), Imgproc.RETR_LIST,Imgproc.CHAIN_APPROX_SIMPLE);
+	   Imgproc.findContours(mask.clone(), contours, new Mat(), Imgproc.RETR_EXTERNAL,Imgproc.CHAIN_APPROX_SIMPLE);
 //	   Imgproc.drawContours(result, contours, -1, new Scalar(0, 0, 255));
 	   
 	   for(int i = 0; i < contours.size(); i++) {
@@ -183,52 +181,16 @@ public class BackgroundSubtractionCalibration extends Screen {
    			Imgproc.minEnclosingCircle(new MatOfPoint2f(contours.get(i).toArray()), center, radius);
 	   		
 	   		// normal circle
-	   		if(area < Math.PI * 36 * 36) {	
-	   			Core.circle(result, center, (int)radius[0], new Scalar(0, 255, 0), 2);
+	   		if(area < Math.PI * 40 * 40) {	
+	   			Core.circle(result, center, 35, new Scalar(0, 255, 0), 2);
 	   		} else {
-	   			int numBalls = (int)Math.round(area / (Math.PI * 33 * 33));
+	   			int numBalls = (int)(area / (Math.PI * 35 * 35));
 	   			Imgproc.drawContours(result, contours, i, new Scalar(0, 0, 255), 2);
 	   			Core.putText(result, "balls:" + numBalls, center, Core.FONT_HERSHEY_PLAIN, 2, new Scalar(255, 255, 255), 2);
 	   		}
 	   	}
 	   }	
 		
-		return result;
-	}
-	
-	private Mat detect (Mat cam, Mat background) {
-		// diff
-		Mat diff = new Mat();
-		Core.absdiff(background, cam, diff);
-		Imgproc.threshold(diff, diff, threshold, 255, Imgproc.THRESH_BINARY);
-
-		Imgproc.blur(diff, diff, new Size(9, 9));
-
-		Mat r = ColorSpace.getChannel(diff, 2);
-		Mat g = ColorSpace.getChannel(diff, 1);
-		Mat b = ColorSpace.getChannel(diff, 0);
-
-		// add with saturate to get binary mask
-		Mat result = r.clone();
-		Core.add(result, g, result);
-		Core.add(result, b, result);
-		r.release();
-		g.release();
-		b.release();
-
-//		for(int i = 0; i < 10; i++) {
-//			Imgproc.erode(result, result, Mat.ones(new Size(3, 3), CvType.CV_32F));
-//		}
-		
-//		Imgproc.dilate(result, result, new Mat());
-		
-		if (true) {
-			List<Circle> circles = detectCircle(result, 35, 40);
-			result = cam;
-			for (Circle circle : circles) {
-				Core.circle(result, new Point(circle.x, circle.y), (int)circle.radius, new Scalar(0, 0, 255), 2);
-			}
-		}
 		return result;
 	}
 
