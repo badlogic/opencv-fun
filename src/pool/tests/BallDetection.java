@@ -41,7 +41,7 @@ public class BallDetection {
 		
 		for(int i = 0; i < detector.getBallClusters().size(); i++) {
 			BallCluster cluster = detector.getBallClusters().get(i);
-//			Imgproc.drawContours(result, Arrays.asList(cluster.getContour()), 0, new Scalar(0, 0, 255), 2);			
+			Imgproc.drawContours(result, Arrays.asList(cluster.getContour()), 0, new Scalar(0, 0, 255), 2);			
 			for(Circle circle: cluster.getEstimatedCircles()) {
 				Core.circle(result, new Point(circle.x, circle.y), (int)circle.radius, new Scalar(255, 0, 255), 2);
 			}

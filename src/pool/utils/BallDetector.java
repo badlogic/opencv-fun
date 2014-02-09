@@ -91,7 +91,7 @@ public class BallDetector {
 					balls.add(new Circle(center.x, center.y, ballRadius));
 				} else {
 					// we found a cluster of balls
-					int numBalls = (int)(area / (Math.PI * ballRadius * ballRadius));
+					int numBalls = (int)(area / (Math.PI * ballRadius * ballRadius * 0.9));
 					
 					// draw the contours to a bit mask
 					Mat hough = Mat.zeros(mask.size(), CvType.CV_8U);
@@ -99,16 +99,22 @@ public class BallDetector {
 					
 					// detect hough circles, try different params until we hit the number of balls
 					Mat houghCircles = new Mat();
-					for(int j = 2; j < 20; j++) {
+					int hit = 0;
+					for(int j = 8; j < 20; j++) {
 						Imgproc.HoughCircles(hough, houghCircles, Imgproc.CV_HOUGH_GRADIENT, 2, ballRadius * 0.9 * 2, 255, j, (int)(ballRadius * 0.9), (int)(ballRadius * 1.1));
-						if(houghCircles.cols() <= numBalls) break;
+						if(houghCircles.cols() <= numBalls) {
+							hit++;
+							if(hit == 5) break;
+						}
 					}
 					
 					
 					List<Circle> estimatedCircles = new ArrayList<Circle>();
 					for(int j = 0; j < houghCircles.cols(); j++) {
 						double[] circle = houghCircles.get(0, j);
-						estimatedCircles.add(new Circle(circle[0], circle[1], ballRadius));
+						if(circle != null) {
+							estimatedCircles.add(new Circle(circle[0], circle[1], ballRadius));
+						}
 					}
 					
 					ballClusters.add(new BallCluster(contours.get(i), numBalls, estimatedCircles));
