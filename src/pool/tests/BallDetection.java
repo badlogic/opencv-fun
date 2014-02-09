@@ -39,8 +39,12 @@ public class BallDetection {
 			Core.circle(result, new Point(ball.x, ball.y), (int)ball.radius, new Scalar(0, 255, 0), 2);
 		}
 		
-		for(BallCluster cluster: detector.getBallClusters()) {
-			Imgproc.drawContours(result, Arrays.asList(cluster.getContour()), 0, new Scalar(0, 0, 255), 2);			
+		for(int i = 0; i < detector.getBallClusters().size(); i++) {
+			BallCluster cluster = detector.getBallClusters().get(i);
+//			Imgproc.drawContours(result, Arrays.asList(cluster.getContour()), 0, new Scalar(0, 0, 255), 2);			
+			for(Circle circle: cluster.getEstimatedCircles()) {
+				Core.circle(result, new Point(circle.x, circle.y), (int)circle.radius, new Scalar(255, 0, 255), 2);
+			}
 			Core.putText(result, cluster.getNumBalls() + " balls", cluster.getMinRect().center, Core.FONT_HERSHEY_SIMPLEX, 1, new Scalar(255, 255, 0));
 		}
 		

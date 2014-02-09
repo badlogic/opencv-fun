@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
+import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
@@ -21,6 +23,7 @@ public class BallDetector {
 
 	private Mat background;
 	private Mat mask;
+	private Mat debug;
 	
 	private final List<Circle> balls = new ArrayList<Circle>();
 	private final List<BallCluster> ballClusters = new ArrayList<BallCluster>();
@@ -89,7 +92,26 @@ public class BallDetector {
 				} else {
 					// we found a cluster of balls
 					int numBalls = (int)(area / (Math.PI * ballRadius * ballRadius));
-					ballClusters.add(new BallCluster(contours.get(i), numBalls));
+					
+					// draw the contours to a bit mask
+					Mat hough = Mat.zeros(mask.size(), CvType.CV_8U);
+					Imgproc.drawContours(hough, contours, i, new Scalar(255, 255, 255), -2);
+					
+					// detect hough circles, try different params until we hit the number of balls
+					Mat houghCircles = new Mat();
+					for(int j = 2; j < 20; j++) {
+						Imgproc.HoughCircles(hough, houghCircles, Imgproc.CV_HOUGH_GRADIENT, 2, ballRadius * 0.9 * 2, 255, j, (int)(ballRadius * 0.9), (int)(ballRadius * 1.1));
+						if(houghCircles.cols() <= numBalls) break;
+					}
+					
+					
+					List<Circle> estimatedCircles = new ArrayList<Circle>();
+					for(int j = 0; j < houghCircles.cols(); j++) {
+						double[] circle = houghCircles.get(0, j);
+						estimatedCircles.add(new Circle(circle[0], circle[1], ballRadius));
+					}
+					
+					ballClusters.add(new BallCluster(contours.get(i), numBalls, estimatedCircles));
 				}
 			}
 		}
@@ -105,10 +127,6 @@ public class BallDetector {
 
 	public Mat getMask () {
 		return mask;
-	}
-
-	public void setMask (Mat mask) {
-		this.mask = mask;
 	}
 
 	public int getThreshold () {
@@ -153,5 +171,9 @@ public class BallDetector {
 
 	public List<MatOfPoint> getContours () {
 		return contours;
+	}
+
+	public Mat getDebug () {
+		return debug;
 	}
 }

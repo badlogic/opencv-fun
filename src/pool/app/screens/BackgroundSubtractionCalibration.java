@@ -209,7 +209,7 @@ public class BackgroundSubtractionCalibration extends Screen {
 					Core.circle(cam, center, ballRadius, new Scalar(0, 255, 0), 2);
 				} else {
 					int numBalls = (int)(area / (Math.PI * ballRadius * ballRadius));
-					Imgproc.drawContours(cam, contours, i, new Scalar(0, 0, 255), 2);
+					Imgproc.drawContours(cam, contours, i, new Scalar(0, 0, 255), 2);					
 				}
 			}
 		}
