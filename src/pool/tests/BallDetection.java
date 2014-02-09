@@ -40,10 +40,11 @@ public class BallDetection {
 		}
 		
 		for(BallCluster cluster: detector.getBallClusters()) {
-			Imgproc.drawContours(result, Arrays.asList(cluster.getContour()), 0, new Scalar(0, 0, 255), 2);
+			Imgproc.drawContours(result, Arrays.asList(cluster.getContour()), 0, new Scalar(0, 0, 255), 2);			
 			Core.putText(result, cluster.getNumBalls() + " balls", cluster.getMinRect().center, Core.FONT_HERSHEY_SIMPLEX, 1, new Scalar(255, 255, 0));
 		}
 		
+		Core.putText(result, wnd.mouseX + ", " + wnd.mouseY, new Point(20, 30), Core.FONT_HERSHEY_SIMPLEX, 1, new Scalar(255, 255, 255));
 		wnd.setImage(result);
 	}		
 }
