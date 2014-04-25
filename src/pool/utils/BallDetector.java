@@ -16,7 +16,7 @@ import org.opencv.imgproc.Imgproc;
 import pool.tests.ColorSpace;
 
 public class BallDetector {
-	private int threshold = 20;
+	private int threshold = 30;
 	private int blurSize = 7;
 	private int morphSize = 5;
 	private int ballRadius = 35;
@@ -104,7 +104,7 @@ public class BallDetector {
 						Imgproc.HoughCircles(hough, houghCircles, Imgproc.CV_HOUGH_GRADIENT, 2, ballRadius * 0.9 * 2, 255, j, (int)(ballRadius * 0.9), (int)(ballRadius * 1.1));
 						if(houghCircles.cols() <= numBalls) {
 							hit++;
-							if(hit == 5) break;
+							if(hit == 4) break;
 						}
 					}
 					

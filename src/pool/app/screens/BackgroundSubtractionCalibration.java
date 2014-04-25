@@ -45,7 +45,6 @@ public class BackgroundSubtractionCalibration extends Screen {
 			}
 		});
 
-		app.getCameraView().addLabel("threshold:", Color.WHITE);
 		
 		app.getCameraView().addButton("Take Screenshot", new ClickCallback() {
 			@Override
@@ -54,7 +53,8 @@ public class BackgroundSubtractionCalibration extends Screen {
 			}
 		});
 
-		app.getCameraView().addSlider(0, 255, 20, new ValueCallback() {
+		app.getCameraView().addLabel("threshold:", Color.WHITE);
+		app.getCameraView().addSlider(0, 255, 30, new ValueCallback() {
 			@Override
 			public void valueChanged (int value) {
 				if(detector != null) detector.setThreshold(value);
