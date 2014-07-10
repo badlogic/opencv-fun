@@ -10,6 +10,7 @@ import org.opencv.core.Scalar;
 import org.opencv.highgui.Highgui;
 import org.opencv.imgproc.Imgproc;
 
+import pool.app.Calibration;
 import pool.utils.BallCluster;
 import pool.utils.BallDetector;
 import pool.utils.CVLoader;
@@ -21,7 +22,9 @@ public class BallDetection {
 		CVLoader.load();
 		
 		ImgWindow wnd = ImgWindow.newWindow();
-		BallDetector detector = new BallDetector(Highgui.imread("screenshots/positions/background.png"));
+		Calibration calib = new Calibration(1280, 800);
+		calib.setBackgroundImage(Highgui.imread("screenshots/positions/background.png"));
+		BallDetector detector = new BallDetector(calib);
 		Mat camera = Highgui.imread("screenshots/positions/camera.png");
 		
 		 while(true) {

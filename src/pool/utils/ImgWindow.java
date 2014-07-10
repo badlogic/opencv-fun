@@ -170,6 +170,7 @@ public class ImgWindow extends JPanel {
 					}
 				});
 				panel.add(btn);
+				panel.validate();
 			}
 		});
 	}
@@ -194,6 +195,7 @@ public class ImgWindow extends JPanel {
 					}
 				});			
 				panel.add(slider);
+				panel.validate();
 			}
 		});
 	}
@@ -205,7 +207,8 @@ public class ImgWindow extends JPanel {
 				JPanel panel = ImgWindow.this;
 				JLabel label = new JLabel(text);
 				label.setForeground(color);
-				panel.add(label);
+				panel.add(label);		
+				panel.validate();
 			}
 		});
 	}
@@ -215,6 +218,7 @@ public class ImgWindow extends JPanel {
 			@Override
 			public void run () {
 				ImgWindow.this.removeAll();
+				ImgWindow.this.validate();
 			}
 		});
 	}

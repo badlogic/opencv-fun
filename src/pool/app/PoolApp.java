@@ -1,13 +1,9 @@
 package pool.app;
 
-import javax.media.jai.PerspectiveTransform;
-
 import pool.app.screens.BackgroundSubtractionCalibration;
-import pool.app.screens.CameraScreen;
 import pool.utils.CVLoader;
 import pool.utils.Camera;
 import pool.utils.ImgWindow;
-import pool.utils.IpCamera;
 import pool.utils.OpenCVCamera;
 
 public class PoolApp {
@@ -50,16 +46,16 @@ public class PoolApp {
 		return cameraView.closed || projectorView.closed;
 	}
 	
-	public synchronized void update() {
-		if(lastScreen != null) {
-			lastScreen.dispose();
-			lastScreen = null;
-			screen.initialize();
-		}
+	public synchronized void update() {		
 		if(screen != null) {
 			cameraView.processEvents();
 			projectorView.processEvents();
-			screen.update();
+			if(lastScreen != null) {
+				lastScreen.dispose();
+				lastScreen = null;
+				screen.initialize();
+			}
+			screen.update();			
 		}
 	}
 	
